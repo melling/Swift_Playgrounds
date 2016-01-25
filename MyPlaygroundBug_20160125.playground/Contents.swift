@@ -6,4 +6,4 @@ import UIKit
 
 let image = UIImage(named:"texture.png")
 // Uncomment this line and Xcode will crash
-//let colorPattern = UIColor(patternImage: image!)
+let colorPattern = UIColor(patternImage: image!)
