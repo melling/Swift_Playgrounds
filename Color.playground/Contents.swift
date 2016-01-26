@@ -39,10 +39,10 @@ let colorWithHue = UIColor(hue:0.625, saturation:0.0, brightness:0.85, alpha:1.0
 
 //: Color from Pattern
 
-//let image = UIImage(named:"texture.png")
+let image = UIImage(named:"texture.png")
 //let colorPattern = UIColor(patternImage: image!)
 
-//if let image = UIImage(named:"texture.png") {
-//    let colorPattern = UIColor(patternImage: image)
-//}
+if let image0 = UIImage(named:"texture.png") {
+    let colorPattern = UIColor(patternImage: image0)
+}
 
