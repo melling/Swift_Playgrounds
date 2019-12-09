@@ -26,14 +26,14 @@ public class ComputerDay05 {
     
     public init() {}
     /*
-    ABCDE
+     ABCDE
      1002
-    
-    DE - two-digit opcode,      02 == opcode 2
-    C - mode of 1st parameter,  0 == position mode
-    B - mode of 2nd parameter,  1 == immediate mode
-    A - mode of 3rd parameter,  0 == position mode,
-    omitted due to being a leading zero
+     
+     DE - two-digit opcode,      02 == opcode 2
+     C - mode of 1st parameter,  0 == position mode
+     B - mode of 2nd parameter,  1 == immediate mode
+     A - mode of 3rd parameter,  0 == position mode,
+     omitted due to being a leading zero
      
      In position mode, parameters are addresses
      In immediate mode, parameters are values
@@ -41,21 +41,33 @@ public class ComputerDay05 {
      104
      opcode = 04
      parameter 1 = immediate
-    */
+     */
     private func getParameter(mode:ParameterMode, instructionPointer:Int) -> Int {
         let value:Int
         
         switch mode {
         case .position:
-             value = opcodes[opcodes[instructionPointer] ]
-            case .immediate:
-                value = opcodes[instructionPointer]
+            value = opcodes[opcodes[instructionPointer] ]
+        case .immediate:
+            value = opcodes[instructionPointer]
         }
         return value
         
     }
     
     
+    enum OpcodeEnum: Int {
+        case add = 1
+        case multiply = 2
+        case input = 3
+        case output = 4
+        case jump_if_true = 5
+        case jump_if_false = 6
+        case lessThan = 7
+        case equals = 8
+        case halt = 99
+        case unknown = 9999
+    }
     
     func processOpcodes(_ instructionPointer:Int) {
         let opcode:Int
@@ -70,11 +82,10 @@ public class ComputerDay05 {
             
         }
         let cmd = opcodes[instructionPointer]
-        print("pc =\(instructionPointer), cmd=\(cmd)")
+        //        print("pc =\(instructionPointer), cmd=\(cmd)")
         assert(cmd < 10000, "Invalid cmd: \(cmd)" )
         //assert(cmd < 100 || cmd > 1000, "Invalid cmd: \(cmd)" )
-        //if cmd < 100 || cmd > 1000 {
-            
+        
         //}
         if cmd > 100 {
             // immediate mode
@@ -88,6 +99,7 @@ public class ComputerDay05 {
             parameter1Mode = .position
             parameter2Mode = .position
         }
+        let opcodeEnum:OpcodeEnum = OpcodeEnum(rawValue: opcode) ?? OpcodeEnum.unknown
         
         switch opcode {
         case 1,2: // add, multiply
@@ -105,6 +117,7 @@ public class ComputerDay05 {
                 result = value1 * value2
             }
             opcodes[resultPtr] = result
+            print("pc=\(instructionPointer),\(cmd) \(opcode) \(opcodeEnum) \(value1):\(parameter1Mode) \(value2):\(parameter2Mode) -> \(result) to addr \(instructionPointer + 3)")
             
             processOpcodes(instructionPointer + 4)
         case 3: // input
@@ -114,6 +127,7 @@ public class ComputerDay05 {
             
             let resultPtr = opcodes[instructionPointer + 1]
             opcodes[resultPtr] = userInput
+            print("pc=\(instructionPointer),\(cmd) \(opcode) \(opcodeEnum) input=\(userInput) to addr \(instructionPointer + 1)")
             processOpcodes(instructionPointer + 2)
             
         case 4: // output
@@ -134,52 +148,60 @@ public class ComputerDay05 {
              
              
              */
-            case 5: // jump-if-true
-                let value1 = getParameter(mode: parameter1Mode, instructionPointer: instructionPointer + 1)
-                let value2 = getParameter(mode: parameter2Mode, instructionPointer: instructionPointer + 2)
-                if value1 > 0 {
-                    processOpcodes(value2)
-                } else {
-                    processOpcodes(instructionPointer + 3)
+        case 5: // jump-if-true
+            let value1 = getParameter(mode: parameter1Mode, instructionPointer: instructionPointer + 1)
+            let value2 = getParameter(mode: parameter2Mode, instructionPointer: instructionPointer + 2)
+            print("pc=\(instructionPointer),\(cmd) \(opcode) \(value1):\(parameter1Mode) \(value2):\(parameter2Mode)")
+            
+            if value1 > 0 {
+                processOpcodes(value2)
+            } else {
+                processOpcodes(instructionPointer + 3)
             }
-                //let resultPtr = opcodes[instructionPointer + 3]
+            //let resultPtr = opcodes[instructionPointer + 3]
             /*
- Opcode 6 is jump-if-false: if the first parameter is zero, it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
- */
-            case 6: // jump-if-false
-                let value1 = getParameter(mode: parameter1Mode, instructionPointer: instructionPointer + 1)
-                let value2 = getParameter(mode: parameter2Mode, instructionPointer: instructionPointer + 2)
-                if value1 == 0 {
-                    processOpcodes(value2)
-                } else {
-                    processOpcodes(instructionPointer + 3)
-                }
+             Opcode 6 is jump-if-false: if the first parameter is zero, it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
+             */
+        case 6: // jump-if-false
+            let value1 = getParameter(mode: parameter1Mode, instructionPointer: instructionPointer + 1)
+            let value2 = getParameter(mode: parameter2Mode, instructionPointer: instructionPointer + 2)
+            print("pc=\(instructionPointer),\(cmd) \(opcode) \(opcodeEnum) \(value1):\(parameter1Mode) \(value2):\(parameter2Mode)")
+            
+            if value1 == 0 {
+                processOpcodes(value2)
+            } else {
+                processOpcodes(instructionPointer + 3)
+            }
             /*
- Opcode 7 is less than: if the first parameter is less than the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
- */
-            case 7: // less than
-                let value1 = getParameter(mode: parameter1Mode, instructionPointer: instructionPointer + 1)
-                let value2 = getParameter(mode: parameter2Mode, instructionPointer: instructionPointer + 2)
-                let memPtr = getParameter(mode: parameter2Mode, instructionPointer: instructionPointer + 3)
-                if value1 < value2 {
-                    opcodes[memPtr] = 1
-                } else {
-                    opcodes[memPtr] = 0
-                }
-                processOpcodes(instructionPointer + 4)
+             Opcode 7 is less than: if the first parameter is less than the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
+             */
+        case 7: // less than
+            let value1 = getParameter(mode: parameter1Mode, instructionPointer: instructionPointer + 1)
+            let value2 = getParameter(mode: parameter2Mode, instructionPointer: instructionPointer + 2)
+            let memPtr = getParameter(mode: parameter2Mode, instructionPointer: instructionPointer + 3)
+            if value1 < value2 {
+                opcodes[memPtr] = 1
+            } else {
+                opcodes[memPtr] = 0
+            }
+            print("pc=\(instructionPointer),\(cmd) \(opcode) \(opcodeEnum) \(value1):\(parameter1Mode) \(value2):\(parameter2Mode)")
+            
+            processOpcodes(instructionPointer + 4)
             /*
              Opcode 8 is equals: if the first parameter is equal to the second parameter, it stores 1 in the position given by the third parameter. Otherwise, it stores 0.
              */
-            case 8: // equals
-                let value1 = getParameter(mode: parameter1Mode, instructionPointer: instructionPointer + 1)
-                let value2 = getParameter(mode: parameter2Mode, instructionPointer: instructionPointer + 2)
-                let memPtr = getParameter(mode: parameter2Mode, instructionPointer: instructionPointer + 3)
-                if value1 == value2 {
-                    opcodes[memPtr] = 1
-                } else {
-                    opcodes[memPtr] = 0
-                }
-                processOpcodes(instructionPointer + 4)
+        case 8: // equals
+            let value1 = getParameter(mode: parameter1Mode, instructionPointer: instructionPointer + 1)
+            let value2 = getParameter(mode: parameter2Mode, instructionPointer: instructionPointer + 2)
+            let memPtr = getParameter(mode: parameter2Mode, instructionPointer: instructionPointer + 3)
+            if value1 == value2 {
+                opcodes[memPtr] = 1
+            } else {
+                opcodes[memPtr] = 0
+            }
+            print("pc=\(instructionPointer),\(cmd) \(opcode) \(opcodeEnum) \(value1):\(parameter1Mode) \(value2):\(parameter2Mode)")
+            
+            processOpcodes(instructionPointer + 4)
             
         case 99: //halt
             //print("halt")
@@ -342,21 +364,21 @@ extension Day05 {
 public class Util {
     
     class func pow(_ base:Int, _ power:Int) -> Int {
-    if power == 0 {
-        return 1
-    } else if power == 1 {
-        return base
+        if power == 0 {
+            return 1
+        } else if power == 1 {
+            return base
+        }
+        
+        let x = (2...power).reduce(base) {result, _ in result*base}
+        return x
     }
     
-    let x = (2...power).reduce(base) {result, _ in result*base}
-    return x
-}
-
     class func getDigit(number:Int, n:Int) -> Int {
-    let p:Int = pow(10, n)
-    let x = number / p % 10
-    return x
-}
+        let p:Int = pow(10, n)
+        let x = number / p % 10
+        return x
+    }
 }
 // xx1 = Util.pow(10,3)
 //let xx2 = Util.getDigit(number: 104, n: 3)
