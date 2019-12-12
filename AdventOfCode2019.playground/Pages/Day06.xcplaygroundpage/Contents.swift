@@ -118,8 +118,8 @@ class Day06 {
         graph.dump()
         print("--------")
         let pathIToK = graph.findPath(node1: "YOU", destNode: "SAN")
-//        let pathIToK = graph.findReversePath(destNode: "SAN", startNode: "YOU") // == 6
-
+        //        let pathIToK = graph.findReversePath(destNode: "SAN", startNode: "YOU") // == 6
+        
         //        let pathIToK = graph.findPath(node1: "I", destNode: "K")
         print("# = \(pathIToK.count)=> \(pathIToK.count-3) PATH=\(pathIToK)")
         print("Test 4 complete")
@@ -143,22 +143,22 @@ class Day06 {
         graph.addEdges(edgeList: edges)
         graph.dump()
         print("--------")
-//SAN, ["X7C"]
-//YOU, ["31G"]
-
-//        let pathIToK = graph.findReversePath(destNode: "YOU", startNode: "SAN")
-//        let pathIToK = graph.findReversePath(destNode: "YOU", startNode: "SAN")
+        //SAN, ["X7C"]
+        //YOU, ["31G"]
+        
+        //        let pathIToK = graph.findReversePath(destNode: "YOU", startNode: "SAN")
+        //        let pathIToK = graph.findReversePath(destNode: "YOU", startNode: "SAN")
         let pathIToK = graph.findPath(node1: "YOU", destNode: "SAN")
-//        let pathIToK = graph.findReversePath(destNode: "31G", startNode: "X7C")
-
+        //        let pathIToK = graph.findReversePath(destNode: "31G", startNode: "X7C")
+        
         //        let pathIToK = graph.findPath(node1: "I", destNode: "K")
         
         //        let orbits = graph.calcTotalLength()
         print("Part 2 complete") // 285 -- 287 too high Freaking off by one.
         // Remove 2 for YOU and SAN, then 1 more. 
         print("# = \(pathIToK.count)=> ** \(pathIToK.count-3) PATH=\(pathIToK)")
-
-//        print("PATH=\(pathIToK)")
+        
+        //        print("PATH=\(pathIToK)")
         return pathIToK.count - 3
     }
 }

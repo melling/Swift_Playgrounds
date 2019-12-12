@@ -5,7 +5,6 @@
  
  Must change my runProgram to take a list of inputs.
  
- https://www.reddit.com/r/adventofcode/comments/e7aou1/2019_day_7_part_2_help_comprehending_instruction/
  */
 
 
@@ -33,28 +32,6 @@ class Permutation {
     }
 }
 
-
-public class Util {
-    
-    class func pow(_ base:Int, _ power:Int) -> Int {
-        if power == 0 {
-            return 1
-        } else if power == 1 {
-            return base
-        }
-        
-        let x = (2...power).reduce(base) {result, _ in result*base}
-        return x
-    }
-    
-    class func getDigit(number:Int, n:Int) -> Int {
-        let p:Int = pow(10, n)
-        let x = number / p % 10
-        return x
-    }
-}
-
-
 enum OpcodeEnum: Int {
     case add = 1
     case multiply = 2
@@ -73,13 +50,11 @@ let input = "3,225,1,225,6,6,1100,1,238,225,104,0,1101,65,73,225,1101,37,7,225,1
 
 
 
-public class ComputerDay07 {
+public class ComputerDay05 {
     
     public var opcodes:[Int] = []
     public var userInput:Int = 1
     public var lastOutput:Int = -999
-    public var ip = 0
-    public var cpuId = 0
     
     //public var _pc:Int = 0
     
@@ -121,7 +96,7 @@ public class ComputerDay07 {
     
     
     // runProgram
-    func processOpcodes(inputs:[Int]) -> (Int?, Int) {
+    func processOpcodes(inputs:[Int], _ instructionPointer:Int=0) {
         var opcode:Int
         var parameter1Mode:ParameterMode
         var parameter2Mode:ParameterMode
@@ -130,17 +105,16 @@ public class ComputerDay07 {
         
         var isRunning = true
         
-        //var ip = instructionPointer
+        var ip = instructionPointer
         
         while isRunning {
             
-            print("cpu=\(cpuId),pc=\(ip)")
+            print("pc=\(ip)")
             //_pc = instructionPointer
             
             if ip >= opcodes.count {
-                print("ERROR: cpu=\(cpuId), \(ip)")
-                return (nil, ip)
-                assertionFailure("ERROR: cpu=\(cpuId), ip=\(ip) > \(opcodes.count)")
+                print("ERROR: \(ip)")
+                assertionFailure("ERROR: \(ip) > \(opcodes.count)")
                 
             }
             let cmd = opcodes[ip]
@@ -188,15 +162,9 @@ public class ComputerDay07 {
                  */
                 
                 let destPtr = opcodes[ip + 1]
-                if inputNum < inputs.count {
-                    opcodes[destPtr] = inputs[inputNum]
-                    inputNum += 1
-                    print("User Input: \(input) -> [\(destPtr)]")
-                    
-                } else {
-                    print("Input out of range: \(inputNum) >= \(inputs.count)")
-                }
-                
+                opcodes[destPtr] = inputs[inputNum]
+                inputNum += 1
+                print("User Input: \(input) -> [\(destPtr)]")
                 
                 print("\(opcodes)")
                 ip += 2
@@ -213,7 +181,6 @@ public class ComputerDay07 {
                 print("output=\(output)")
                 lastOutput = output
                 ip += 2
-                return (output, ip)
                 /*
                  Opcode 5 is jump-if-true: if the first parameter is non-zero, it sets the instruction pointer to the value from the second parameter. Otherwise, it does nothing.
                  */
@@ -275,17 +242,27 @@ public class ComputerDay07 {
                 
             case 99: //halt
                 print("halt")
-                return (nil, ip)
+                return
                 
             default:
                 print("invalid cmd: \(cmd), \(opcode)")
-                return (nil, 0)
+                return
             }
         }
     }
     
+    public func day02_1(noun:Int, verb:Int) -> Int {
+        
+        opcodes[1] = noun
+        opcodes[2] = verb
+        
+        processOpcodes(inputs:[1], 0)
+        //        print("\(opcodes)")
+        return opcodes[0]
+    }
     
 }
+//var opcodes = [1,0,0,3,99]
 
 /*
  
@@ -319,7 +296,92 @@ class Day07 {
         return opcodeList
     }
     
+    //replace position 1 with the value 12 and replace position 2 with the value 2.
     
+    
+    private func validate(noun:Int, verb:Int) -> Int {100 * noun + verb}
+    
+    private func findNounAndVerb(opcodes:[Int], result:Int) -> (Int,Int){
+        //
+        let computer = ComputerDay05()
+        
+        computer.opcodes = opcodes
+        
+        for noun in 0 ... 99 {
+            //        print("noun=\(noun)")
+            for verb in 0 ... 99 {
+                computer.opcodes = opcodes
+                let result1 = computer.day02_1(noun: noun, verb: verb)
+                if result == result1 {
+                    return (noun, verb)
+                }
+            }
+        }
+        return (-1, -1)
+    }
+    
+    
+    /*
+     The program 3,0,4,0,99 outputs whatever it gets as input, then halts.
+     */
+    public func test1() {
+        //
+        //let opcodes = getOpcodes(str: "input")
+        let computer = ComputerDay05()
+        let testCodes1 = [3,0,4,0,99]
+        //opcodes = loadOpcodes()
+        computer.opcodes = testCodes1
+        computer.processOpcodes(inputs: [1], 0)
+        print("\(computer.opcodes)")
+        assert(computer.opcodes == [1,0,4,0,99])
+    }
+    
+    public func test2() {
+        //
+        
+        let computer = ComputerDay05()
+        let testCodes1 = [1002,4,3,4,33]
+        //opcodes = loadOpcodes()
+        computer.opcodes = testCodes1
+        computer.processOpcodes(inputs:[1], 0)
+        print("\(computer.opcodes)")
+        assert(computer.opcodes == [1002,4,3,4,99])
+    }
+    
+    public func day05_part1(userInput:Int) -> Int {
+        //
+        let opcodes = getOpcodes(str: input)
+        
+        let computer = ComputerDay05()
+        //let testCodes1 = [3,0,4,0,99]
+        //opcodes = loadOpcodes()
+        computer.opcodes = opcodes
+        computer.userInput = userInput
+        computer.processOpcodes(inputs:[userInput])
+        //print("\(computer._pc)")
+        print("\(computer.opcodes)")
+        print("\(computer.lastOutput)") // == 14522484,
+        return computer.lastOutput
+    }
+    
+    public func day02_part1_2() {
+        var opcodes:[Int] = []
+        //opcodes = [1,0,0,3,1,1,2,3,1,3,4,3,1,5,0,3,2,10,1,19,1,19,5,23,1,23,9,27,2,27,6,31,1,31,6,35,2,35,9,39,1,6,39,43,2,10,43,47,1,47,9,51,1,51,6,55,1,55,6,59,2,59,10,63,1,6,63,67,2,6,67,71,1,71,5,75,2,13,75,79,1,10,79,83,1,5,83,87,2,87,10,91,1,5,91,95,2,95,6,99,1,99,6,103,2,103,6,107,2,107,9,111,1,111,5,115,1,115,6,119,2,6,119,123,1,5,123,127,1,127,13,131,1,2,131,135,1,135,10,0,99,2,14,0,0]
+        //var opcodes = [1,9,10,3,2,3,11,0,99,30,40,50]
+        
+        let computer = ComputerDay05()
+        opcodes = loadOpcodes(fileName: "input02")
+        computer.opcodes = opcodes
+        
+        // 4945026
+        let result1 = computer.day02_1(noun: 12, verb: 2)
+        let validate1 = validate(noun: 12, verb: 2)
+        // Part 2
+        let (noun, verb) = findNounAndVerb(opcodes: opcodes, result: 19690720 )
+        // 19690720
+        let validate2 = validate(noun: noun, verb: verb)
+        print("\(noun), \(verb) => \(validate2)")
+    }
 }
 
 // Day 05, Part 2
@@ -331,7 +393,7 @@ extension Day07 {
     public func testP2t1() {
         //
         
-        let computer = ComputerDay07()
+        let computer = ComputerDay05()
         let testCodes = [3,9,8,9,10,9,4,9,99,-1,8]
         
         computer.opcodes = testCodes
@@ -344,7 +406,7 @@ extension Day07 {
     public func testP2t2() {
         //
         
-        let computer = ComputerDay07()
+        let computer = ComputerDay05()
         let testCodes = [3,9,8,9,10,9,4,9,99,-1,8]
         
         computer.opcodes = testCodes
@@ -354,19 +416,17 @@ extension Day07 {
         //assert(computer.opcodes == [])
     }
     
-    
     public func testProgram(userInputs:[Int], opcodes:[Int]) -> Int {
         //
         print("\(opcodes)")
         
-        let computer = ComputerDay07()
+        let computer = ComputerDay05()
         computer.opcodes = opcodes
         //        computer.userInput = userInput
-        let (output, ip) = computer.processOpcodes(inputs:userInputs)
+        computer.processOpcodes(inputs:userInputs)
         //print("\(computer._pc)")
         print("\(computer.opcodes)")
         print("\(computer.lastOutput)") // == 14522484,
-        //assert()
         return computer.lastOutput
     }
     
@@ -414,89 +474,25 @@ extension Day07 {
         return answer
     }
 }
-
-// Part 2
-
-extension Day07 {
+public class Util {
     
-    func part2_test_day07(phaseSettings:[Int], opcodes:[Int]) -> Int {
-        //
-        var cpuList:[ComputerDay07] = []
-        for i in 1 ... 5 {
-            let cpu = ComputerDay07()
-            cpu.opcodes = opcodes
-            cpu.cpuId = i
-            cpuList.append(cpu)
+    class func pow(_ base:Int, _ power:Int) -> Int {
+        if power == 0 {
+            return 1
+        } else if power == 1 {
+            return base
         }
         
-        var answer = 0
-        var value:Int = 0
-        var value0:Int? = nil
-        var cpuNum = 0
-        var ip1 = 0
-        var isDone = false
-        var isFirstPhase = true
-        while !isDone {
-            
-        
-        for phase in phaseSettings {
-            var inputs:[Int] = []
-            if isFirstPhase {
-                inputs.append(phase)
-            }
-            inputs.append(value)
-            let cpu = cpuList[cpuNum]
-            print("cpu=\(cpuNum)")
-            
-            (value0, ip1) = cpu.processOpcodes(inputs: inputs)
-            if value0 == nil {
-                print("ans=\(answer)")
-                return answer
-            } else {
-                value = value0!
-                if value > answer {
-                    answer = value
-                    
-                }
-                cpuNum = (cpuNum + 1) % 5
-            }
-            
-        }
-            isFirstPhase = false
-        }
-        return answer
+        let x = (2...power).reduce(base) {result, _ in result*base}
+        return x
     }
     
-    func day07_part2() -> Int {
-        
-        let perms = Permutation()
-        let opcodes = loadOpcodes(fileName: "input07")
-        opcodes.count
-        var arr = Array([5,6,7,8,9])
-        perms.permutations(arr.count,&arr)
-        print("\(perms.allPerms.count)")
-        print(perms.allPerms)
-        var answer = 0
-        var value = 0
-        var val:Int? = nil
-        
-        var isDone = false
-        
-            
-        // 22476942
-        for phaseSetting in perms.allPerms {
-            let result = part2_test_day07(phaseSettings: phaseSetting, opcodes: opcodes )
-            if result > answer {
-                answer = result
-            }
-            
-        }
-        print("ans=\(answer)")
-        return answer
+    class func getDigit(number:Int, n:Int) -> Int {
+        let p:Int = pow(10, n)
+        let x = number / p % 10
+        return x
     }
 }
-
-
 // xx1 = Util.pow(10,3)
 //let xx2 = Util.getDigit(number: 104, n: 3)
 let day07 = Day07()
@@ -514,30 +510,15 @@ let day07 = Day07()
 //let t2 = day05.testProgram(userInput: 9, opcodes: [3,9,7,9,10,9,4,9,99,-1,8]) // input < 8 ==> 1 otherwise 0
 
 //day05.day05_part1(input: 1)
-func doPart1() {
-    
-
 // 3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0
-    let t1 = day07.test_day07(phaseSettings: [ 4,3,2,1,0 ], opcodes: [3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0]) // 43210
-    let t2 = day07.test_day07(phaseSettings: [ 0,1,2,3,4 ], opcodes:  [ 3,23,3,24,1002,24,10,24,1002,23,-1,23,101,5,23,23,1,24,23,23,4,23,99,0,0 ] ) // 54321
-    let t3 = day07.test_day07(phaseSettings: [ 1,0,4,3,2 ], opcodes: [ 3,31,3,32,1002,32,10,32,1001,31,-2,31,1007,31,0,33,1002,33,7,33,1,33,31,31,1,32,31,31,4,31,99,0,0,0 ]) // 65210
+let t1 = day07.test_day07(phaseSettings: [ 4,3,2,1,0 ], opcodes: [3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0]) // 43210
+let t2 = day07.test_day07(phaseSettings: [ 0,1,2,3,4 ], opcodes:  [ 3,23,3,24,1002,24,10,24,1002,23,-1,23,101,5,23,23,1,24,23,23,4,23,99,0,0 ] ) // 54321
+let t3 = day07.test_day07(phaseSettings: [ 1,0,4,3,2 ], opcodes: [ 3,31,3,32,1002,32,10,32,1001,31,-2,31,1007,31,0,33,1002,33,7,33,1,33,31,31,1,32,31,31,4,31,99,0,0,0 ]) // 65210
 
-    let result1 = day07.day07_part1() // 77500
-}
-
-func doPart2() {
-    //let t1 = day07.part2_test_day07(phaseSettings: [ 9,8,7,6,5 ], opcodes: [3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5]) // 139629729
-    //let t2 = day07.part2_test_day07(phaseSettings: [ 9,7,8,5,6 ], opcodes: [ 3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54, -5,54,1105,1,12,1,53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10 ]) // 18216
-    
-    let result2 = day07.day07_part2()
-    
-}
-
+let result1 = day07.day07_part1() // 77500
 // result2 = userInput: 5 => 4655956
 //print("output=\(day05.lastOutput)")
 //day05.testP2t1()
-//doPart1()
-doPart2()
 
 print("Done")
 //day05.day02_part1_2()
